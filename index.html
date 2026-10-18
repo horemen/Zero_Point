@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Zero Point</title>
+<meta name="description" content="Пиксельная RPG: героиня Аэлис охотится на зверей, птиц, гуманоидов и элементалей и прокачивает владение оружием.">
+<meta name="theme-color" content="#1a1008">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="sprites/icons/icon-192.png">
+<link rel="apple-touch-icon" href="sprites/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="game" id="game">
+  <canvas id="arena" aria-label="Игровой мир"></canvas>
+
+  <div class="hud-top" id="hud-top">
+    <div class="hud-left">
+      <div class="frame unit" id="unit" role="button" tabindex="0" aria-label="Открыть окно персонажа">
+        <canvas id="portrait" width="32" height="32"></canvas>
+        <div class="unit-info">
+          <div class="unit-name ol" id="unit-name">Аэлис</div>
+          <div class="pbar red"><i id="bar-hp"></i><span class="ol" id="txt-hp"></span></div>
+          <div class="pbar gold"><i id="bar-m"></i><span class="ol" id="txt-m"></span></div>
+        </div>
+      </div>
+      <div class="frame target" id="target" hidden>
+        <div class="target-name ol"><span id="target-name"></span><small id="target-lvl"></small></div>
+        <div class="pbar red"><i id="bar-thp"></i><span class="ol" id="txt-thp"></span></div>
+        <button class="tbtn" type="button" id="switch-target">Сменить цель</button>
+      </div>
+    </div>
+    <div class="hud-tr">
+      <div class="frame mini" id="mini" role="button" tabindex="0" aria-label="Список врагов на карте"><canvas id="minimap" width="64" height="43"></canvas><div class="mini-label ol" id="map-label">Деревня</div></div>
+      <button class="frame coins-pill ol" id="coins-pill" type="button" aria-label="Коины — открыть сумку"><img id="coin-ico" alt=""><span id="hud-coins">0</span></button>
+      <div class="btn-row">
+        <button class="ibtn" id="pause" type="button" aria-label="Пауза"></button>
+        <button class="ibtn ol" id="speed" type="button" aria-label="Скорость игры">×1</button>
+        <button class="ibtn" id="menu-btn" type="button" aria-label="Меню"><svg viewBox="0 0 16 16" shape-rendering="crispEdges" fill="currentColor"><rect x="2" y="3" width="12" height="2"/><rect x="2" y="7" width="12" height="2"/><rect x="2" y="11" width="12" height="2"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <ol class="chat ol" id="log" aria-label="Журнал"></ol>
+  <div class="banner ol" id="banner" hidden><b id="banner-title"></b><span id="banner-sub"></span></div>
+  <div class="fade" id="fade"></div>
+
+  <button class="frame potion-box" id="potion-box" type="button" aria-label="Текущее зелье"><img id="pb-ico" alt=""><span class="pb-n ol" id="pb-n">0</span><span class="pb-name ol" id="pb-name"></span></button>
+
+  <div class="hud-bottom">
+    <div class="frame actionbar" id="actionbar"></div>
+  </div>
+
+  <!-- Окно: паутина навыков -->
+  <div class="layer" id="win-skills" hidden>
+    <div class="frame window" role="dialog" aria-labelledby="ws-title">
+      <div class="win-head"><span class="spacer"></span><h2 class="ol" id="ws-title">Паутина навыков</h2><button class="ibtn close" type="button" aria-label="Закрыть"></button></div>
+      <div class="win-body">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div class="web-body">
+          <div>
+            <svg class="web-svg" id="web" viewBox="-250 -250 500 500" role="group" aria-label="Паутина навыков"></svg>
+            <div class="web-legend" id="web-legend"></div>
+          </div>
+          <div class="detail">
+            <div class="pts-line inset" id="pts-line"></div>
+            <div class="card inset" id="node-card"></div>
+            <div class="totals inset" id="totals"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно: персонаж -->
+  <div class="layer" id="win-char" hidden>
+    <div class="frame window" role="dialog" aria-labelledby="wc-title">
+      <div class="win-head"><span class="spacer"></span><h2 class="ol" id="wc-title">Персонаж</h2><button class="ibtn close" type="button" aria-label="Закрыть"></button></div>
+      <div class="win-body">
+        <div class="char-top">
+          <canvas id="char-portrait" width="32" height="32"></canvas>
+          <div><div class="char-name ol" id="char-name">Аэлис</div><p class="hint" id="char-sub"></p></div>
+        </div>
+        <div class="inset"><h4>Снаряжение</h4>
+          <div class="doll" id="doll"></div>
+          <div class="doll-card" id="doll-card"></div>
+        </div>
+        <div class="char-grid">
+          <div class="inset"><h4>Характеристики</h4><div id="char-stats"></div></div>
+          <div class="inset"><h4 id="char-combat-title">В бою</h4><div id="char-combat"></div></div>
+        </div>
+        <div class="inset"><h4>Владение оружием</h4><div class="mastery-list" id="char-mastery"></div></div>
+        <div class="inset"><h4>Охота</h4><div id="char-record"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно: сумка -->
+  <div class="layer" id="win-bag" hidden>
+    <div class="frame window bagwin" role="dialog" aria-labelledby="wb-title">
+      <div class="win-head"><span class="spacer"></span><h2 class="ol" id="wb-title">Сумка</h2><button class="ibtn close" type="button" aria-label="Закрыть"></button></div>
+      <div class="win-body">
+        <div class="inset bag-top">
+          <div class="bag-coins"><img id="bag-coin-ico" alt=""><b class="ol" id="bag-coins">0</b><span>коинов</span></div>
+          <span class="hint" id="bag-summary"></span>
+          <button class="gbtn" type="button" id="sell-all" data-armed="false">Продать всё</button>
+        </div>
+        <h4 class="sec-h ol">Зелья</h4>
+        <div class="bag-grid potions" id="potion-grid"></div>
+        <div class="sec-row"><h4 class="sec-h ol">Снаряжение <small id="gear-count"></small></h4><button class="tbtn" type="button" id="gear-sell-all" data-armed="false">Продать всё снаряжение</button></div>
+        <div class="bag-grid" id="gear-grid"></div>
+        <h4 class="sec-h ol">Добыча</h4>
+        <div class="bag-grid" id="bag-grid"></div>
+        <div class="inset item-card" id="item-card"></div>
+        <div class="inset" style="display:grid;gap:8px">
+          <h4>Автозакупка при воскрешении</h4>
+          <p class="hint">После воскрешения у камня героиня докупает зелья до выбранного количества: сначала самые дорогие, а на оставшуюся сдачу — более дешёвые, но не больше выбранного.</p>
+          <div class="abuy" id="autobuy"></div>
+          <div class="abuy-foot"><span class="hint" id="autobuy-cost"></span><button class="tbtn" type="button" id="buy-now">Докупить сейчас</button></div>
+        </div>
+        <div class="inset" style="display:grid;gap:8px">
+          <h4>Автопродажа добычи</h4>
+          <p class="hint">Предметы выбранной редкости продаются сразу, как только выпадают. Зелья не продаются.</p>
+          <button class="toggle" type="button" id="autosell-on" aria-pressed="false"></button>
+          <div class="rar-row" id="autosell-rar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно: враги на карте -->
+  <div class="layer" id="win-enemies" hidden>
+    <div class="frame window small" role="dialog" aria-labelledby="we-title">
+      <div class="win-head"><span class="spacer"></span><h2 class="ol" id="we-title">Враги на карте</h2><button class="ibtn close" type="button" aria-label="Закрыть"></button></div>
+      <div class="win-body">
+        <button class="toggle" type="button" id="similar-btn" aria-pressed="false"></button>
+        <p class="hint" id="similar-hint"></p>
+        <p class="hint" id="enemy-sum"></p>
+        <div class="elist" id="enemy-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно: воскрешение (открывается само при гибели) -->
+  <div class="layer" id="win-death" hidden>
+    <div class="frame window small" role="dialog" aria-labelledby="wd-title">
+      <div class="win-head"><h2 class="ol dead-title" id="wd-title">Аэлис погибла</h2></div>
+      <div class="win-body">
+        <p class="hint" id="death-sub"></p>
+        <div class="inset" style="display:grid;gap:8px">
+          <h4>Автозакупка зелий</h4>
+          <p class="hint">Сколько зелий каждого вида героиня докупит у камня воскрешения: сначала самые дорогие, а на оставшуюся сдачу — более дешёвые, но не больше выбранного.</p>
+          <div class="abuy" id="death-autobuy"></div>
+          <div class="abuy-foot"><span class="hint" id="death-cost"></span></div>
+        </div>
+        <button class="gbtn" type="button" id="revive-btn">Воскреснуть</button>
+        <p class="hint center" id="death-timer"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно: выпало снаряжение (поверх остальных окон, очередь находок) -->
+  <div class="layer drop-layer" id="win-drop" hidden>
+    <div class="frame window small" role="dialog" aria-labelledby="wdr-title">
+      <div class="win-head"><h2 class="ol" id="wdr-title">Новое снаряжение</h2></div>
+      <div class="win-body">
+        <div class="drop-body" id="drop-body"></div>
+        <div class="pbar gold drop-time"><i id="drop-bar"></i></div>
+        <p class="hint center" id="drop-timer"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Окно: меню -->
+  <div class="layer" id="win-menu" hidden>
+    <div class="frame window small" role="dialog" aria-labelledby="wm-title">
+      <div class="win-head"><span class="spacer"></span><h2 class="ol" id="wm-title">Меню</h2><button class="ibtn close" type="button" aria-label="Закрыть"></button></div>
+      <div class="win-body">
+        <div class="inset" style="display:grid;gap:8px">
+          <h4>Установить на телефон</h4>
+          <button class="gbtn" type="button" id="install-btn" hidden>Установить приложение</button>
+          <p class="hint" id="install-hint"></p>
+        </div>
+        <div class="inset" style="display:grid;gap:8px">
+          <h4>Пить зелья</h4>
+          <label class="range-row" for="drink-at"><span id="drink-label"></span></label>
+          <input type="range" id="drink-at" min="0" max="100" step="5" value="30">
+          <p class="hint" id="drink-hint"></p>
+        </div>
+        <div class="inset" style="display:grid;gap:8px">
+          <h4>Скорость игры</h4>
+          <div class="menu-row" id="speed-row"></div>
+        </div>
+        <div class="inset" style="display:grid;gap:6px">
+          <h4>Управление</h4>
+          <p class="hint" id="controls-hint"></p>
+          <p class="hint" id="save-hint"></p>
+        </div>
+        <button class="gbtn red" type="button" id="reset" data-armed="false">Сбросить прогресс</button>
+        <button class="ver-btn" type="button" id="version-btn" aria-expanded="false" aria-controls="changelog"></button>
+        <div class="inset changelog" id="changelog" hidden></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Данные и правила -->
+<script src="js/config.js"></script>
+<script src="js/changelog.js"></script>
+<script src="js/skills-data.js"></script>
+<script src="js/items-data.js"></script>
+<script src="js/potions-data.js"></script>
+<script src="js/gear-data.js"></script>
+<script src="js/save.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/mastery.js"></script>
+<script src="js/fx.js"></script>
+<!-- Спрайты -->
+<script src="sprites/base.js"></script>
+<script src="sprites/items.js"></script>
+<script src="sprites/props.js"></script>
+<script src="sprites/hero.js"></script>
+<script src="sprites/enemies.js"></script>
+<!-- Мир и персонажи -->
+<script src="js/world.js"></script>
+<script src="js/ground.js"></script>
+<script src="js/enemies.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/potions.js"></script>
+<script src="js/gear.js"></script>
+<script src="js/hero-ai.js"></script>
+<script src="js/render.js"></script>
+<!-- Интерфейс -->
+<script src="js/ui-hud.js"></script>
+<script src="js/ui-skills.js"></script>
+<script src="js/ui-character.js"></script>
+<script src="js/ui-bag.js"></script>
+<script src="js/ui-enemies.js"></script>
+<script src="js/ui-death.js"></script>
+<script src="js/ui-drop.js"></script>
+<script src="js/ui-menu.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
